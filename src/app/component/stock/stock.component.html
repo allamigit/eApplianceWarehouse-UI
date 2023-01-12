@@ -1,0 +1,522 @@
+<p></p>
+<div class="container col-md-11">
+  <div class="form-group col-md-12" align="right">
+    <button class="btn btn-primary" data-toggle="modal" data-target="#newItemModal" *ngIf="accessGroup.newStock">Add New Stock Item</button>
+    <span style="color: white">--</span>
+    <div class="btn-group" *ngIf="accessGroup.costPrice">
+      <a class="btn btn-outline-success dropdown-toggle" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+        💲 Set Price
+      </a>
+      <div class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
+          <a class="dropdown-item" style="cursor: pointer" data-toggle="modal" data-target="#sellingPriceModal">Selling Price</a>
+          <div class="dropdown-divider"></div>
+          <a class="dropdown-item" style="cursor: pointer" data-toggle="modal" data-target="#salePriceModal">Sale Price</a>
+      </div>
+    </div>
+    <!--<span style="color: white">--</span>
+    <button class="btn btn-outline-primary" (click)="refreshTable()">🔄 Refresh</button>-->
+    <span style="color: white">--</span>
+    <div class="btn-group">
+      <button type="button" class="btn btn-secondary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+        Columns
+      </button>
+      <div class="dropdown-menu">
+        <input type="checkbox" [checked]="showSize" (click)="toggleSize()" /> <span> Size</span> <br>
+        <input type="checkbox" [checked]="showQTY" (click)="toggleQTY()"> <span> Quantity</span> <br>
+        <input type="checkbox" [checked]="showCost" (click)="toggleCost()" *ngIf="accessGroup.costPrice"> <span *ngIf="accessGroup.costPrice"> Cost Price</span> <br *ngIf="accessGroup.costPrice">
+        <input type="checkbox" [checked]="showSelling" (click)="toggleSelling()"> <span> Selling Price</span> <br>
+        <input type="checkbox" [checked]="showSale" (click)="toggleSale()"> <span> Sale Price</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ALERT MESSAGE -->
+  <div id="alert" class={{alertType}} role="alert">
+    {{alertMessage}}
+  </div>
+
+  <h4 style="color: blue; text-align: center;">{{reportHead}}</h4>
+  <div class="form-group col-md-2" *ngIf="showSearchBar1">
+    <label>Search by ID:</label>
+    <input type="search" [(ngModel)]="searchId" (change)="searchItemId()" class="form-control" placeholder="Type in item ID" maxlength=6>
+  </div>
+  <div class="form-group col-md-5" *ngIf="showSearchBar2">
+    <label>Search by Name:</label>
+    <input type="search" [(ngModel)]="searchName" (input)="searchItemName()" class="form-control" placeholder="Type in item name or part of the name" maxlength=40>
+  </div>
+</div>
+
+<!-- <div class="table-responsive" style="height: 560px"> -->
+<div class="container col-md-11" style="overflow: auto; height: 500px">
+
+    <table class="table table-hover" style="width: 100%">
+
+      <colgroup>
+        <col style="width: 12%">
+        <col style="width: 1%" *ngIf="accessGroup.costPrice">
+        <col style="width: 10%">
+        <col style="width: 25%">
+        <col style="width: 8%" *ngIf="showSize">
+        <col style="width: 8%" *ngIf="showQTY">
+        <col style="width: 10%" *ngIf="showCost && accessGroup.costPrice">
+        <col style="width: 10%" *ngIf="showSelling">
+        <col style="width: 10%" *ngIf="showEditSelling">
+        <col style="width: 10%" *ngIf="showSale">
+        <col style="width: 10%" *ngIf="showEditSale">
+        <col style="width: 1%">
+        <col style="width: 4%">
+        <col style="width: 1%" *ngIf="accessGroup.stockInfo">
+      </colgroup>
+
+      <thead>
+        <tr>
+          <td colspan="12">Stock Items Listed: {{searchFound}}</td>
+        </tr>
+
+        <tr>
+          <th></th>
+          <th *ngIf="accessGroup.costPrice"><input type="checkbox" id="checkAll" (change)="toggleAllItems()" title="Select All Items"></th>
+          <th><span style="cursor: pointer" (click)="toggleSearchBar1()" title="Show/Hide Search Bar">🔎</span> Item ID</th>
+          <th><span style="cursor: pointer" (click)="toggleSearchBar2()" title="Show/Hide Search Bar">🔎</span> Item Name</th>
+          <th *ngIf="showSize">Size</th>
+          <th *ngIf="showQTY">Quantity</th>
+          <th *ngIf="showCost && accessGroup.costPrice">Cost Price</th>
+          <th *ngIf="showSelling"><span style="cursor: pointer" *ngIf="accessGroup.costPrice" (click)="toggleEditSellingPrice()" title="Edit">✏️</span>Selling Price</th>
+          <th *ngIf="showEditSelling"><span style="cursor: pointer" *ngIf="accessGroup.costPrice" (click)="toggleEditSellingPrice()" title="Done">🆗</span> Selling Price</th>
+          <th *ngIf="showSale"><span style="cursor: pointer" *ngIf="accessGroup.costPrice" (click)="toggleEditSalePrice()" title="Edit">✏️</span>Sale Price</th>
+          <th *ngIf="showEditSale"><span style="cursor: pointer" *ngIf="accessGroup.costPrice" (click)="toggleEditSalePrice()" title="Done">🆗</span> Sale Price</th>
+          <th style="cursor: pointer" title="Item Comments">🟢</th>
+          <th>
+            <div class="btn-group">
+              <button type="button" class="btn btn-outline-secondary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                Status
+              </button>
+              <div class="dropdown-menu">
+                <option style="font-weight: bold; cursor: pointer" (click)="allStockItems()">📁 All</option>
+                <option style="color: green; cursor: pointer" (click)="activeStockItems()">✔️ Active</option>
+                <option style="color: red; cursor: pointer" (click)="inactiveStockItems()">❌ Inactive</option>
+              </div>
+            </div>
+          </th>
+          <th style="cursor: pointer" title="Item Info" *ngIf="accessGroup.stockInfo">ℹ️</th>
+        </tr>
+      </thead>
+
+      <tbody>
+        <tr *ngFor="let item of items; let i=index">
+            <td>
+              <button class="btn btn-outline-danger" title="Delete Item" (click)="deleteItem(i)" *ngIf="accessGroup.stockDelete">🗑️</button>
+              <span style="color: white">--</span>
+              <button class="btn btn-outline-primary" title="Update Item" data-toggle="modal" data-target="#itemModal" (click)="getItemById(i)" *ngIf="accessGroup.stockUpdate">📝</button>
+            </td>
+            <td *ngIf="accessGroup.costPrice"><input type="checkbox" class="checkItem" [disabled]="!item.itemStatus"></td>
+            <td style="cursor: pointer; font-weight: bold; text-align: center" (click)="getItemOrders(item.itemId, item.itemName)">{{item.itemId}}</td>
+            <td>{{item.itemName}}</td>
+            <td *ngIf="showSize">{{item.itemSize|number:'.2'}} - {{item.sizeUnit}}</td>
+            <td [ngStyle]="{'color':item.itemQTY<=10?'red':'black'}" *ngIf="showQTY">{{item.itemQTY|number:'.2'}}</td>
+            <td style="color: blue" *ngIf="showCost && accessGroup.costPrice"><b>{{item.costPrice|currency}}</b></td>
+            <td [ngStyle]="{'text-decoration':item.salePrice>0?'line-through':'none'}" *ngIf="showSelling">{{item.sellingPrice|currency}}</td>
+            <td *ngIf="showEditSelling">
+              <input type="currency" class="input-text" style="width: 150px" [disabled]="!item.itemStatus"
+                [(ngModel)]="item.sellingPrice" (change)="saveSellingPrice(i)" min=1 step=0.01>
+            </td>
+            <td [ngStyle]="{'background-color':item.salePrice>0 && item.salePrice<item.costPrice?'lightpink':'none'}" *ngIf="showSale">{{item.salePrice|currency}}</td>
+            <td *ngIf="showEditSale">
+              <input type="currency" class="input-text" style="width: 150px" [disabled]="!item.itemStatus"
+                [(ngModel)]="item.salePrice" (change)="saveSalePrice(i)" min=1 step=0.01>
+            </td>
+            <td title="Item Comments" style="cursor: pointer" data-toggle="modal" data-target="#commentItemModal" (click)="getItemById(i)">
+                {{item.itemComment?'🟢':'⚪'}}</td>
+            <td [ngStyle]="{'color':item.itemStatus?'green':'red'}">{{item.itemStatus?'✔️ Active':item.itemStatus == null?' ':'❌ Inactive'}}</td>
+            <td title="Item Info" style="cursor: pointer" data-toggle="modal" data-target="#infoModal" *ngIf="accessGroup.stockInfo" (click)="getItemById(i)">ℹ️</td>
+          </tr>
+
+          <tr>
+            <td colspan="12" align="center" [hidden]="!blankRow">No Data Found</td>
+          </tr>
+    </tbody>
+    </table>
+
+    <!-- UPDATE STOCK ITEM MODAL -->
+    <div class="modal fade" id="itemModal" tabindex="-1" role="dialog" aria-labelledby="itemModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+
+          <div class="modal-header" style="background-color: royalblue; color: white">
+            <h5 class="modal-title" id="itemModalLabel">Update Stock Item #{{itemId}}</h5>
+            <button type="button" class="close" style="color: white" data-dismiss="modal" aria-label="Close" (click)="zeroPercent()">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+
+          <div class="modal-body">
+
+            <div class="form-group col-md-11">
+              <label>Item Name</label> <span style="color:red"> *</span>
+              <input type="text" class="form-control" [(ngModel)]="itemsUpdate.itemName" maxlength=40 required>
+            </div>
+
+            <!--<div class="form-row">
+              <span style="color: white">W</span>
+
+              <div class="form-group col-md-11">
+                <label >Item Photo</label>
+                <input type="file" class="form-control-file" [(ngModel)]="itemsUpdate.itemPhoto">
+              </div>
+            </div>
+
+            <span style="color: white">W</span>-->
+
+            <div class="form-row">
+              <span style="color: white">W</span>
+
+              <div class="form-group col-md-2">
+                <label>Item Size</label>
+                <input type="number" class="form-control" [(ngModel)]="itemsUpdate.itemSize" min=1 step=0.01>
+              </div>
+
+              <div class="form-group col-md-2">
+                <label>Size Unit</label>
+                <input type="text" class="form-control" [(ngModel)]="itemsUpdate.sizeUnit" oninput="this.value = this.value.toUpperCase()" maxlength=3>
+              </div>    
+
+              <div class="form-group col-md-2">
+                <label>Item Quantity</label> <span style="color:red"> *</span>
+                <input type="number" class="form-control" [(ngModel)]="itemsUpdate.itemQTY" min=1 step=1 required>
+              </div>
+
+              <div class="form-group col-md-2">
+                <label>Item Weight</label>
+                <input type="number" class="form-control" [(ngModel)]="itemsUpdate.itemWeight" min=1 step=0.1>
+              </div>    
+            </div>
+
+            <div class="form-row">
+              <span style="color: white">W</span>
+
+              <div class="form-group col-md-2">
+                <label>Cost Price</label> <span style="color:red"> *</span>
+                <input type="currency" class="form-control" [readonly]="accessGroup.costPriceReadOnly" [(ngModel)]="itemsUpdate.costPrice" data-type="currency" min=1 step=0.01 required>
+              </div>
+
+              <div class="form-group col-md-2">
+                <label>Profit %</label>
+                <input type="number" class="form-control" [disabled]="!itemsUpdate.itemStatus" [(ngModel)]="sellingPercent" (change)="calcSellingPrice1()" min=1 step=0.25>
+              </div>    
+
+              <div class="form-group col-md-2">
+                <label>Selling Price</label> <span style="color:red"> *</span>
+                <input type="currency" class="form-control" [(ngModel)]="itemsUpdate.sellingPrice" (change)="calcPercent1()" 
+                  data-type="currency" min=1 step=0.01 required>
+              </div>  
+
+              <div class="form-group col-md-2">
+                <label>Sale %</label>
+                <input type="number" class="form-control" [disabled]="!itemsUpdate.itemStatus" [(ngModel)]="salePercent" (change)="calcSalePrice1()" min=1 max=100 step=0.25>
+              </div>    
+
+              <div class="form-group col-md-2">
+                <label>Sale Price</label>
+                <input type="currency" class="form-control" [disabled]="!itemsUpdate.itemStatus" [(ngModel)]="itemsUpdate.salePrice" (change)="calcPercent1()" 
+                  data-type="currency" min=1 step=0.01>
+              </div>    
+            </div>
+
+            <div class="form-row">
+              <span style="color: white">W</span>
+
+              <div class="form-group col-md-3">
+                <label>Item Status</label> <span style="color:red"> *</span>
+                <select class="form-control" [(ngModel)]="itemsUpdate.itemStatus" required>
+                    <option value="" selected disabled>Select Item Status</option>
+                    <option value="true">Active</option>
+                    <option value="false">Inactive</option>
+                </select>              
+              </div>
+
+              <div class="form-group col-md-3">
+                <br><br><span style="color: white">WW</span>
+                <input type="checkbox" [(ngModel)]="itemsUpdate.taxStatus"> Taxable Item
+              </div>
+            </div>
+
+            <div class="form-group col-md-11">
+              <label>Comments</label>
+              <textarea type="text" class="form-control" style="resize: none" [(ngModel)]="itemsUpdate.itemComment" rows="3" maxlength="250"> </textarea>
+              <span>Max: 250 characters</span>
+            </div>
+
+            <span style="color:red">* </span> <span>Required fields</span>
+
+          </div>
+
+          <div class="modal-footer">
+            <button id="close1" type="button" class="btn btn-secondary rounded-text" data-dismiss="modal" (click)="zeroPercent()">Close</button>
+            <button id="save" type="button" class="btn btn-primary rounded-text" (click)="updateItem(itemId)">Save Changes</button>
+            <button id="saved" type="button" class="btn btn-success rounded-text" hidden>Changes Saved</button>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- ADD NEW STOCK ITEM MODAL -->
+    <div class="modal fade" id="newItemModal" tabindex="-1" role="dialog" aria-labelledby="newItemModalLabel" aria-hidden="true">
+      <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+
+          <div class="modal-header"  style="background-color: royalblue; color: white">
+            <h5 class="modal-title" id="newItemModalLabel">Add New Stock Item</h5>
+            <button type="button" class="close" style="color: white" data-dismiss="modal" aria-label="Close" (click)="zeroPercent()">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          
+          <div class="modal-body">
+            
+            <div class="form-group col-md-11">
+              <label>Item Name</label> <span style="color:red"> *</span>
+              <input type="text" class="form-control" [(ngModel)]="itemsNew.itemName" maxlength=40 required>
+            </div>
+
+            <!--<div class="form-row">
+              <span style="color: white">W</span>
+
+              <div class="form-group col-md-11">
+                <label >Item Photo</label>
+                <input type="file" class="form-control-file" [(ngModel)]="itemsNew.itemPhoto">
+              </div>
+            </div>
+
+            <span style="color: white">W</span>-->
+
+            <div class="form-row">
+              <span style="color: white">W</span>
+
+              <div class="form-group col-md-2">
+                <label>Item Size</label>
+                <input type="number" class="form-control" [(ngModel)]="itemsNew.itemSize" min=1 step=0.01>
+              </div>
+
+              <div class="form-group col-md-2">
+                <label>Size Unit</label>
+                <input type="text" class="form-control" [(ngModel)]="itemsNew.sizeUnit" oninput="this.value = this.value.toUpperCase()" maxlength=3>
+              </div>    
+
+              <div class="form-group col-md-2">
+                <label>Item Quantity</label> <span style="color:red"> *</span>
+                <input type="number" class="form-control" [(ngModel)]="itemsNew.itemQTY" min=1 step=1 required>
+              </div>
+
+              <div class="form-group col-md-2">
+                <label>Item Weight</label>
+                <input type="number" class="form-control" [(ngModel)]="itemsNew.itemWeight" min=1 step=0.1>
+              </div>    
+            </div>
+
+            <div class="form-row">
+              <span style="color: white">W</span>
+
+              <div class="form-group col-md-2">
+                <label>Cost Price</label> <span style="color:red"> *</span>
+                <input type="currency" class="form-control" [(ngModel)]="itemsNew.costPrice" data-type="currency" required>
+              </div>
+
+              <div class="form-group col-md-2">
+                <label>Profit %</label>
+                <input type="number" class="form-control" [disabled]="!itemsNew.itemStatus" [(ngModel)]="sellingPercent" (change)="calcSellingPrice2()" min=1 step=0.25>
+              </div>    
+
+              <div class="form-group col-md-2">
+                <label>Selling Price</label> <span style="color:red"> *</span>
+                <input type="currency" class="form-control" [(ngModel)]="itemsNew.sellingPrice" (change)="calcPercent2()" 
+                  data-type="currency" min=1 step=0.01 required>
+              </div>    
+
+              <div class="form-group col-md-2">
+                <label>Sale %</label>
+                <input type="number" class="form-control" [disabled]="!itemsNew.itemStatus" [(ngModel)]="salePercent" (change)="calcSalePrice2()" min=1 max=100 step=0.25>
+              </div>    
+
+              <div class="form-group col-md-2">
+                <label>Sale Price</label>
+                <input type="currency" class="form-control" [disabled]="!itemsNew.itemStatus" [(ngModel)]="itemsNew.salePrice" (change)="calcPercent2()" 
+                  data-type="currency" min=1 step=0.01>
+              </div>    
+            </div>
+
+            <div class="form-row">
+              <span style="color: white">W</span>
+
+              <div class="form-group col-md-3">
+                <label>Item Status</label> <span style="color:red"> *</span>
+                <select class="form-control" [(ngModel)]="itemsNew.itemStatus" required>
+                    <option value="" selected disabled>Select Item Status</option>
+                    <option value="true">Active</option>
+                    <option value="false">Inactive</option>
+                </select>
+              </div>
+
+              <div class="form-group col-md-3">
+                <br><br><span style="color: white">WW</span>
+                <input type="checkbox" [(ngModel)]="itemsNew.taxStatus"> Taxable Item
+              </div>
+            </div>
+
+            <div class="form-group col-md-11">
+              <label>Comments</label>
+              <textarea type="text" class="form-control" style="resize: none" [(ngModel)]="itemsNew.itemComment" rows="3" maxlength="250"> </textarea>
+              <span>Max: 250 characters</span>
+            </div>
+
+            <span style="color:red">* </span> <span>Required fields</span>
+
+          </div>
+
+          <div class="modal-footer">
+            <button id="close2" type="button" class="btn btn-secondary rounded-text" data-dismiss="modal" (click)="zeroPercent()">Close</button>
+            <button id="add2" type="button" class="btn btn-primary rounded-text" (click)="newItem()">Add Item</button>
+            <button id="added" type="button" class="btn btn-success rounded-text" hidden>Item Added</button>
+          </div>
+          
+        </div>
+      </div>
+    </div>
+    
+    <!-- SHOW ITEM COMMENTS MODAL -->
+    <div class="modal fade" id="commentItemModal" tabindex="-1" role="dialog" aria-labelledby="commentItemModalLabel" aria-hidden="true">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+
+          <div class="modal-header"  style="background-color: royalblue; color: white">
+            <h5 class="modal-title" id="commentItemModalLabel">Comments: {{itemsUpdate.itemName}}</h5>
+            <button type="button" class="close" style="color: white" data-dismiss="modal" aria-label="Close" (click)="zeroPercent()">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          
+          <div class="modal-body">
+            
+            <div class="form-group col-md-12">
+              <label>{{itemsUpdate.itemComment}}</label>
+            </div>
+
+          </div>
+
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary rounded-text" data-dismiss="modal" (click)="zeroPercent()">Close</button>
+          </div>
+          
+        </div>
+      </div>
+    </div>
+
+    <!-- SHOW CREATED BY & UPDATED BY MODAL -->
+    <div class="modal fade" id="infoModal" tabindex="-1" role="dialog" aria-labelledby="infoModalLabel" aria-hidden="true">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+
+          <div class="modal-header"  style="background-color: royalblue; color: white">
+            <h5 class="modal-title" id="infoModalLabel">Information: {{itemsUpdate.itemName}}</h5>
+            <button type="button" class="close" style="color: white" data-dismiss="modal" aria-label="Close" (click)="zeroPercent()">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          
+          <div class="modal-body">
+            
+            <div class="form-group col-md-12">
+              <label style="color: blue">Created by:</label>
+              <label>{{itemsUpdate.createdBy}}</label> <br><br>
+              <label style="color: orange">Last Updated by:</label>
+              <label>{{itemsUpdate.updatedBy}}</label>
+            </div>
+
+          </div>
+
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary rounded-text" data-dismiss="modal" (click)="zeroPercent()">Close</button>
+          </div>
+          
+        </div>
+      </div>
+    </div>
+
+    <!-- SHOW SET SELLING PRICE MODAL -->
+    <div class="modal fade" id="sellingPriceModal" tabindex="-1" role="dialog" aria-labelledby="sellingPriceModalLabel" aria-hidden="true">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+
+          <div class="modal-header"  style="background-color: royalblue; color: white">
+            <h5 class="modal-title" id="sellingPriceModalLabel">Set Selling Price</h5>
+            <button type="button" class="close" style="color: white" data-dismiss="modal" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          
+          <div class="modal-body">
+            
+            <div class="form-row">
+
+              <div style="color: white">W</div>
+
+              <label>Selling Price / Profit %</label> 
+              <div class="form-group col-md-3">
+                <input type="number" class="form-control" [(ngModel)]="sellingPercent" min=0 step=0.25 required>
+              </div>
+              <span style="color:red"> *</span>
+
+            </div>
+
+          </div>
+
+          <div class="modal-footer">
+            <button id="closeSelling" type="button" class="btn btn-secondary rounded-text" data-dismiss="modal">Close</button>
+            <button id="apply1" type="button" class="btn btn-primary rounded-text" (click)="setSellingPrice()">Apply</button>
+            <button id="applied1" type="button" class="btn btn-success rounded-text" hidden>Applied</button>
+          </div>
+          
+        </div>
+      </div>
+    </div>
+
+    <!-- SHOW SET SALE PRICE MODAL -->
+    <div class="modal fade" id="salePriceModal" tabindex="-1" role="dialog" aria-labelledby="salePriceModalLabel" aria-hidden="true">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+
+          <div class="modal-header"  style="background-color: royalblue; color: white">
+            <h5 class="modal-title" id="salePriceModalLabel">Set Sale Price</h5>
+            <button type="button" class="close" style="color: white" data-dismiss="modal" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          
+          <div class="modal-body">
+            
+            <div class="form-row">
+
+              <div style="color: white">W</div>
+
+              <label>Sale Price / Discount %</label> 
+              <div class="form-group col-md-3">
+                <input type="number" class="form-control" [(ngModel)]="salePercent" min=0 max=100 step=0.25 required>
+              </div>
+              <span style="color:red"> *</span>
+
+            </div>
+
+          </div>
+
+          <div class="modal-footer">
+            <button id="closeSale" type="button" class="btn btn-secondary rounded-text" data-dismiss="modal">Close</button>
+            <button id="apply2" type="button" class="btn btn-primary rounded-text" (click)="setSalePrice()">Apply</button>
+            <button id="applied2" type="button" class="btn btn-success rounded-text" hidden>Applied</button>
+          </div>
+          
+        </div>
+      </div>
+    </div>
+
+  </div>
+

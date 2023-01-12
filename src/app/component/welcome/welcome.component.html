@@ -1,0 +1,26 @@
+<p class="title-top-md-1">Dashboard</p>
+
+<div class="container">
+    <div class="form-row">
+
+        <div class="form-group" style="width: 250px">
+            <div class="div-title" style="font-size: large; color: white; background-color: green; text-align: center">User Last Login</div>
+            <div class="div-body-shade" style="height: 100px; text-align: center">
+                <ul></ul>
+                <label>{{lastLogin}}</label>
+            </div>
+        </div>
+
+        <div style="color: white">----</div>
+
+        <div class="form-group" style="width: 450px">
+            <div class="div-title" style="font-size: large; color: white; background-color: blue; text-align: center">User Comments / Notes</div>
+            <div class="div-body-shade" style="height: 500px">
+                <textarea type="text" class="form-control" style="resize: none" [(ngModel)]="userComment" rows="18" maxlength="250" (change)="saveLoginAndComment()"> </textarea>
+                <span>Max: 250 characters</span>
+            </div>
+        </div>
+
+    </div>
+</div>
+

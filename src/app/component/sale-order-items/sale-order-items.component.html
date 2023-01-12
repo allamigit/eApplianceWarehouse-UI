@@ -1,0 +1,571 @@
+<p></p>
+<div class="form-row">
+    <div class="form-group col-md-6" align="right">
+        <label class="rounded-text-shade" style="background-color: red; color: white; width: 150px; text-align: center" *ngIf="orderReadOnly">READ ONLY</label>
+    </div>
+
+    <div class="form-group col-md-6" align="right">
+        <span style="color: white; font-size: x-large; cursor: pointer" routerLink="/sale-order" title="All Sale Orders">📓-</span>
+        <span style="color: white; font-size: x-large; cursor: pointer" title="Order Info" data-toggle="modal" data-target="#infoModal" 
+            *ngIf="accessGroup.orderInfo" (click)="getOrderById(saleOrder.orderId)">ℹ️-</span>
+        <span style="cursor: pointer; color: blue" (click)="toggleCost()" *ngIf="accessGroup.orderCost">{{showCost?'⏹️ Hide Cost & Profit':'▶️ Show Cost & Profit'}}</span>
+        <span style="color: white; font-size: x-large">WW</span>
+    </div>
+</div>
+
+<!-- TAB BAR -->
+<nav>
+    <div class="nav nav-tabs" id="nav-tab" role="tablist">
+        <a class="nav-link active" id="summary-tab" data-toggle="tab" href="#nav-summary" role="tab" aria-controls="nav-summary" aria-selected="true">Order Summary</a>
+        <a class="nav-link" id="details-tab" data-toggle="tab" href="#nav-details" role="tab" aria-controls="nav-details" aria-selected="false"
+            [hidden]="showCreateOrder">Order Details</a>
+        <a class="nav-link" id="pickup-tab" data-toggle="tab" href="#nav-pickup" role="tab" aria-controls="nav-pickup" aria-selected="false"
+            [hidden]="showCreateOrder">Pickup History</a>
+        
+        <a class="nav-link disabled" data-toggle="tab" role="tab" aria-selected="false" 
+            *ngIf="saleOrder.orderId>0 && !saleOrder.billingStatus" style="background-color: darkorange; color: white">Sale Order [{{saleOrder.orderId}}] - Date: {{saleOrder.orderDate|date:'MM/dd/yyyy'}}</a>
+        <a class="nav-link disabled" data-toggle="tab" role="tab" aria-selected="false" 
+            *ngIf="saleOrder.orderId>0 && saleOrder.billingStatus" style="background-color: darkgreen; color: white">Invoice [{{saleOrder.orderId}}] - Date: {{saleOrder.billingDate|date:'MM/dd/yyyy'}}</a>
+    </div>
+</nav>
+
+<!-- TAB CONTENT -->
+<div class="tab-content" id="nav-tabContent">
+
+    <div class="tab-pane active" id="nav-summary" role="tabpanel" aria-labelledby="summary-tab" [ngClass]="{'disableDiv': orderReadOnly}">
+        <!-- ORDER SUMMARY -->
+        <p></p>
+        <div class="container col-md-11">
+            <div class="div-title col-md-12" style="font-size: larger; color: white; background-color: dimgray;">Order Summary</div>
+
+            <div class="div-body-shade col-md-12">
+
+                <p></p>
+                <div class="form-row">
+                    <div class="form-group col-md-1">
+                        <label>Order ID</label>
+                        <input type="number" class="form-control" [(ngModel)]="saleOrder.orderId" readonly>
+                    </div>
+                    <div class="form-group col-md-2">
+                        <label>Order Date</label> <span style="color:red"> *</span>
+                        <input id="oDate" type="date" class="form-control" [(ngModel)]="saleOrder.orderDate" [readonly]="saleOrder.billingStatus" required>
+                    </div>
+                    <div class="form-group col-md-2">
+                        <label>Order PO</label>
+                        <input type="text" class="form-control" [(ngModel)]="saleOrder.orderPO" [readonly]="saleOrder.billingStatus">
+                    </div>
+                    <div class="form-group col-md-4">
+                        <label>Customer Name</label> <span style="color:red"> *</span>
+                        <input type="text" class="form-control" [(ngModel)]="saleOrder.customerName" [readonly]="saleOrder.billingStatus" required>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group col-md-6">
+                        <label>Order Comments</label>
+                        <textarea type="text" class="form-control" style="resize: none" [(ngModel)]="saleOrder.orderComment" rows="3" maxlength="250" [readonly]="saleOrder.billingStatus"> </textarea>Max: 250 characters  
+                    </div>
+                    <div class="form-group col-md-6">
+                        <label>Invoice Comments</label>
+                        <textarea type="text" class="form-control" style="resize: none" [(ngModel)]="saleOrder.invoiceComment" rows="3" maxlength="250" [readonly]="!saleOrder.billingStatus"> </textarea>Max: 250 characters  
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group col-md-1">
+                        <label>Order Weight</label>
+                        <input type="number" class="form-control" value="{{saleOrder.itemsWeight|number:'.2-2'}}" readonly>
+                    </div>
+                    <div class="form-group col-md-1">
+                        <label>Items Count</label>
+                        <input type="number" class="form-control" value="{{saleOrder.itemsCount}}" readonly>
+                    </div>
+                    <div class="form-group col-md-1">
+                        <label>Picked-up</label>
+                        <input type="number" class="form-control" value="{{saleOrder.pickupCount}}" readonly>
+                    </div>
+                    <div class="form-group col-md-1">
+                        <label>Items Left</label>
+                        <input type="number" class="form-control" value="{{saleOrder.itemsCount-saleOrder.pickupCount}}" readonly>
+                    </div>
+                    <div class="form-group col-md-1">
+                        <label>Pick-up %</label>
+                        <label style="background-color: rgb(235, 237, 239)" class="form-control">{{(saleOrder.pickupCount==0?0:saleOrder.pickupCount/saleOrder.itemsCount)|percent}}</label>
+                    </div>
+                    <div class="form-group col-md-2" *ngIf="accessGroup.orderCost && showCost">
+                        <label>Total Cost</label>
+                        <div class="input-group mb-2">
+                            <div class="input-group-prepend">
+                                <span class="input-group-text">$</span>
+                            </div>
+                            <input type="currency" class="form-control" value="{{saleOrder.orderCost|number:'.2-2'}}" readonly>
+                        </div>
+                    </div>
+                    <div class="form-group col-md-2" *ngIf="accessGroup.orderCost && showCost">
+                        <label>Profit Amount</label>
+                        <div class="input-group mb-2">
+                            <div class="input-group-prepend">
+                                <span class="input-group-text">$</span>
+                            </div>
+                            <input type="currency" class="form-control" value="{{saleOrder.orderTotal-saleOrder.orderCost|number:'.2-2'}}" readonly>
+                        </div>
+                    </div>
+                    <div class="form-group col-md-1" *ngIf="accessGroup.orderCost && showCost">
+                        <label>Profit %</label>
+                        <label style="background-color: rgb(235, 237, 239)" class="form-control">{{(saleOrder.orderTotal==0?0:(saleOrder.orderTotal-saleOrder.orderCost)/saleOrder.orderCost)|percent:'.4'}}</label>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group col-md-2">
+                        <label>Total Amount</label>
+                        <div class="input-group mb-2">
+                            <div class="input-group-prepend">
+                                <span class="input-group-text">$</span>
+                            </div>
+                            <input type="currency" class="form-control" value="{{saleOrder.totalAmount|number:'.2-2'}}" readonly>
+                        </div>
+                    </div>
+                    <div class="form-group col-md-2">
+                        <label>Amount Paid</label>
+                        <div class="input-group mb-2">
+                            <div class="input-group-prepend">
+                                <span class="input-group-text">$</span>
+                            </div>
+                            <input type="currency" class="form-control" value="{{saleOrder.amountPaid|number:'.2-2'}}" readonly>
+                        </div>
+                    </div>
+                    <div class="form-group col-md-2">
+                        <label>Amount Due</label>
+                        <div class="input-group mb-2">
+                            <div class="input-group-prepend">
+                                <span class="input-group-text">$</span>
+                            </div>
+                            <input type="currency" class="form-control" value="{{saleOrder.amountDue|number:'.2-2'}}" readonly>
+                        </div>
+                    </div>
+                    <div class="form-group col-md-6" align="right">
+                        <br>
+                        <button id="create" class="btn btn-secondary rounded-text" *ngIf="showCreateOrder" (click)="newOrder()">Create Sale Order</button>
+                        <span style="color: white">-</span>
+                        <button id="save" class="btn btn-secondary rounded-text" [hidden]="showCreateOrder" (click)="saveChanges()">Save Changes</button>
+                        <button id="saved" class="btn btn-success rounded-text" hidden>Changes Saved</button>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- BUTTONS -->
+        <p></p>
+        <div class="Container col-md-11">
+            <div class="form-row col-md-12">
+                <span style="color: white">WWWW</span>
+                <button class="btn btn-secondary rounded-text" data-toggle="modal" data-target="#invoiceModal" *ngIf="!saleOrder.billingStatus && accessGroup.orderInvoice" [disabled]="!saleOrder.totalAmount>0">Create Invoice</button>
+                <button class="btn btn-secondary rounded-text" data-toggle="modal" data-target="#invoiceModal" *ngIf="saleOrder.billingStatus && accessGroup.orderInvoice" [disabled]="!saleOrder.totalAmount>0">Cancel Invoice</button>
+                <span style="color: white" *ngIf="accessGroup.orderPayment">--</span>
+                <button class="btn btn-secondary rounded-text" data-toggle="modal" data-target="#paymentModal" *ngIf="accessGroup.orderPayment" [disabled]="saleOrder.amountDue<=0">Add Payment</button>
+                <span style="color: white" *ngIf="accessGroup.orderPayment && !showCreateOrder && saleOrder.amountDue<0">--</span>
+                <button class="btn btn-secondary rounded-text" data-toggle="modal" data-target="#creditModal" *ngIf="accessGroup.orderPayment && !showCreateOrder && saleOrder.amountDue<0">Create Credit Memo</button>
+                <span style="color: white" *ngIf="accessGroup.orderPickup">--</span>
+                <button class="btn btn-secondary rounded-text" data-toggle="modal" data-target="#pickupModal" *ngIf="accessGroup.orderPickup" [disabled]="saleOrder.itemsCount-saleOrder.pickupCount==0">Create Pickup Ticket</button>
+            </div>
+        </div>    
+    </div>
+    
+    <div class="tab-pane" id="nav-details" role="tabpanel" aria-labelledby="details-tab">
+        <!-- ADD NEW ITEM -->
+        <p></p>
+        <div class="container col-md-11">
+            <div class="div-title col-md-12" style="font-size: larger; color: white; background-color: dimgray;">Add New Item</div>
+            
+            <div class="div-body col-md-12" style="height: 80px; background-color: lightgrey" [ngClass]="{'disableDiv': saleOrder.billingStatus || orderReadOnly}">
+
+                <div class="form-row">
+                    <div class="col-md-2">
+                        <span>Search Item Name</span>
+                        <input type="search" class="form-control rounded-text-shade" style="background-color: lightyellow" 
+                            [(ngModel)]="searchName" (input)="getActiveItems()">
+                    </div>
+                    <div class="col-md-3">
+                        <span>Item Name & Size</span> <span style="color:red"> *</span>
+                        <select id="itemSelection" class="form-control rounded-text-shade" (change)="chooseItem()" open="true">
+                            <option value="0" selected disabled>Choose Item</option>
+                            <option *ngFor="let stock of stockList; let i=index" value={{stock.itemId}} title={{stock.itemId}}>
+                                {{stock.itemName}} ({{stock.itemSize}} - {{stock.sizeUnit}})
+                            </option>
+                        </select>
+                    </div>
+                    <div class="col-md-1">
+                        <span>Quantity</span> <span style="color:red"> *</span>
+                        <input type="number" class="form-control rounded-text-shade" [(ngModel)]="soldQTY" min=1 step =1>
+                    </div>
+                    <div class="col-md-2">
+                        <span>Unit Price</span> <span style="color:red"> *</span>
+                        <input type="currency" class="form-control rounded-text-shade" [(ngModel)]="unitPrice" min=1 step=0.01 
+                            [ngStyle]="{'text-decoration':!disableSalePrice?'line-through':'none'}" [disabled]="!disableSalePrice" [readonly]="!accessGroup.orderChangePrice">
+                        <input type="currency" class="form-control" [(ngModel)]="costPrice" min=1 step=0.01 hidden>
+                    </div>
+                    <div class="col-md-2">
+                        <span>Sale Price</span>
+                        <input type="currency" class="form-control rounded-text-shade" [(ngModel)]="salePrice" min=1 step=0.01 [disabled]="disableSalePrice" [readonly]="!accessGroup.orderChangePrice">
+                    </div>
+                    <div class="col-md-2">
+                        <br>
+                        <button class="btn btn-secondary rounded-text" (click)="newItem()">Add Item</button>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- ORDER DETAILS -->
+        <p></p>
+        <div class="container col-md-11">
+            <div class="div-title col-md-12" style="font-size: larger; color: white; background-color: dimgray;">Items List</div>
+            
+            <div class="container div-body-shade col-md-12" style="overflow: auto; height: 380px">
+                <div class="col-md-12" [ngClass]="{'disableDiv': saleOrder.billingStatus || orderReadOnly}">  
+                                   
+                    <table class="table table">
+                        <colgroup>
+                            <col style="width: 2%">
+                            <col style="width: 2%" *ngIf="accessGroup.costPrice">
+                            <col style="width: 28%">
+                            <col style="width: 10%">
+                            <col style="width: 5%">
+                            <col style="width: 14%" *ngIf="accessGroup.orderCost && showCost">
+                            <col style="width: 14%">
+                            <col style="width: 14%">
+                            <col style="width: 6%">
+                            <col style="width: 5%">
+                        </colgroup>
+
+                        <thead>
+                            <tr>
+                                <th></th>
+                                <th *ngIf="accessGroup.costPrice"><input type="checkbox" id="checkAll" (change)="toggleAllItems()" title="Select All Items"></th>
+                                <th>Item Name</th>
+                                <th>Size</th>
+                                <th>Quantity</th>
+                                <th *ngIf="accessGroup.orderCost && showCost">Cost Price</th>
+                                <th>
+                                    <!--<span style="cursor: pointer" (click)="retrieveUnitPrice(saleOrder.orderId)" title="Retrieve Current Unit Price" *ngIf="accessGroup.costPrice">💲</span> Unit Price-->
+                                    <span style="cursor: pointer" (click)="retrievePrices()" title="Retrieve Current Unit & Sale Price" *ngIf="accessGroup.costPrice">💲</span> Unit Price
+                                    <div class="spinner-border text-success" role="status" *ngIf="spinner1">
+                                        <span class="sr-only">Loading...</span>
+                                    </div>
+                                </th>
+                                <th>Sale Price
+                                    <div class="spinner-border text-success" role="status" *ngIf="spinner1">
+                                        <span class="sr-only">Loading...</span>
+                                    </div>
+                                </th>
+                                <th>Subtotal</th>
+                                <th>Taxable</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            <tr *ngFor="let item of saleOrderItems; let i=index">
+                                <td>
+                                    <button class="btn btn-outline-light" title="Remove Item" (click)="removeItem(i)" [disabled]="item.soldQTY==0 || item.pickupCount>0 || saleOrder.billingStatus">
+                                        {{item.soldQTY>0 && item.pickupCount==0 && !saleOrder.billingStatus?'❌':'✖️'}}
+                                    </button>
+                                    <!--<span style="color: white">--</span>
+                                    <button class="btn btn-outline-light" title="Save Changes" (click)="saveItem(i)" *ngIf="item.soldQTY>0">💾</button>-->                          
+                                </td>
+                                <th *ngIf="accessGroup.costPrice"><input type="checkbox" class="checkItem"></th>
+                                <td value={{item.itemSEQ}} title={{item.stock.itemId}}>{{item.stock.itemName}}</td>
+                                <td>{{item.stock.itemSize|number:'.2'}} - {{item.stock.sizeUnit}}</td>
+                                <td>
+                                    <input type="number" [(ngModel)]="item.soldQTY" class="input-text" min=1 max=9999 step=1 (change)="saveItem(i)">
+                                </td>
+                                <td style="color: blue" *ngIf="accessGroup.orderCost && showCost"><b>{{item.costPrice|currency}}</b></td>
+                                <td>
+                                    <div class="form-row">
+                                        <span class="label-text">$</span>
+                                        <input type="currency" class="input-text" [ngStyle]="{'text-decoration':item.salePrice>0?'line-through':'none', 'width':'120px'}" 
+                                            [(ngModel)]="item.unitPrice" [disabled]="item.salePrice>0" [readonly]="!accessGroup.orderChangePrice" (change)="saveItem(i)">
+                                    </div>        
+                                </td>
+                                <td>
+                                    <div class="form-row">
+                                        <span class="label-text">$</span>
+                                        <input type="currency" class="input-text" style="width: 120px" [(ngModel)]="item.salePrice" (change)="saveItem(i)" 
+                                            [disabled]="item.salePrice==0 || item.salePrice==null" [readonly]="!accessGroup.orderChangePrice">
+                                    </div>        
+                                </td>
+                                <td [ngStyle]="{'color':item.subtotal<=0?'red':'black'}"><b>{{item.subtotal|currency}}</b></td>
+                                <td align="center"><input type="checkbox" [(ngModel)]="item.taxStatus" (change)="saveItem(i)"></td>
+                            </tr>
+                        </tbody>
+
+                        <tfoot>
+                            <tr>
+                                <td></td>
+                                <td *ngIf="accessGroup.costPrice"></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td *ngIf="accessGroup.orderCost && showCost"></td>
+                                <td></td>
+                                <td align="right"><b>Gross Total:</b></td>
+                                <td colspan="2" [ngStyle]="{'border-top':'double','color':saleOrder.grossTotal<0?'red':'black','border-color':'black'}">
+                                    <b>{{saleOrder.grossTotal|currency}}</b>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td style="border: none"></td>
+                                <td style="border: none" *ngIf="accessGroup.costPrice"></td>
+                                <td style="border: none"></td>
+                                <td style="border: none"></td>
+                                <td style="border: none"></td>
+                                <td style="border: none" *ngIf="accessGroup.orderCost && showCost"></td>
+                                <td style="border: none"></td>
+                                <!--<td colspan="2">{{saleOrder.discountPercent/100|percent}}</td>-->
+                                <td align="right"><b>Discount %:</b></td>
+                                <td colspan="2">
+                                    <input type="number" class="input-text" style="width: 120px" [(ngModel)]="saleOrder.discountPercent" (input)="clearDiscountAmount()" (change)="saveChanges(); saveItem(0)">
+                                </td>
+                            </tr>
+                            <tr>
+                                <td style="border: none"></td>
+                                <td style="border: none" *ngIf="accessGroup.costPrice"></td>
+                                <td style="border: none"></td>
+                                <td style="border: none"></td>
+                                <td style="border: none"></td>
+                                <td style="border: none" *ngIf="accessGroup.orderCost && showCost"></td>
+                                <td style="border: none"></td>
+                                <td align="right"><b>Discount $:</b></td>
+                                <!--<td colspan="2">{{saleOrder.discountAmount|currency}}</td>-->
+                                <td colspan="2">
+                                    <input type="number" class="input-text" style="width: 120px" [(ngModel)]="saleOrder.discountAmount" (input)="clearDiscountPercent()" (change)="saveChanges(); saveItem(0)">
+                                </td>
+                            </tr>
+                            <tr>
+                                <td style="border: none"></td>
+                                <td style="border: none" *ngIf="accessGroup.costPrice"></td>
+                                <td style="border: none"></td>
+                                <td style="border: none"></td>
+                                <td style="border: none"></td>
+                                <td style="border: none" *ngIf="accessGroup.orderCost && showCost"></td>
+                                <td style="border: none"></td>
+                                <td align="right"><b>Discount Amount:</b></td>
+                                <td colspan="2">{{saleOrder.discountTotal|currency}}</td>
+                            </tr>
+                            <tr>
+                                <td style="border: none"></td>
+                                <td style="border: none" *ngIf="accessGroup.costPrice"></td>
+                                <td style="border: none"></td>
+                                <td style="border: none"></td>
+                                <td style="border: none"></td>
+                                <td style="border: none" *ngIf="accessGroup.orderCost && showCost"></td>
+                                <td style="border: none"></td>
+                                <td align="right"><b>Sale Tax:</b></td>
+                                <td colspan="2">{{saleOrder.saleTax|currency}}</td>
+                            </tr>
+                            <tr *ngIf="saleOrder.stateTax>0">
+                                <td style="border: none"></td>
+                                <td style="border: none" *ngIf="accessGroup.costPrice"></td>
+                                <td style="border: none"></td>
+                                <td style="border: none"></td>
+                                <td style="border: none"></td>
+                                <td style="border: none" *ngIf="accessGroup.orderCost && showCost"></td>
+                                <td style="border: none"></td>
+                                <td align="right"><b>State Tax:</b></td>
+                                <td colspan="2">{{saleOrder.stateTax|currency}}</td>
+                            </tr>
+                            <tr>
+                                <td style="border: none"></td>
+                                <td style="border: none" *ngIf="accessGroup.costPrice"></td>
+                                <td style="border: none"></td>
+                                <td style="border: none"></td>
+                                <td style="border: none"></td>
+                                <td style="border: none" *ngIf="accessGroup.orderCost && showCost"></td>
+                                <td style="border: none"></td>
+                                <td align="right"><b>Total Amount:</b></td>
+                                <td colspan="2" [ngStyle]="{'color':saleOrder.grossTotal<0?'red':'orange'}"><b>{{saleOrder.totalAmount|currency}}</b></td>
+                            </tr>
+                            <tr>
+                                <td style="border: none"></td>
+                                <td style="border: none" *ngIf="accessGroup.costPrice"></td>
+                                <td style="border: none"></td>
+                                <td style="border: none"></td>
+                                <td style="border: none"></td>
+                                <td style="border: none" *ngIf="accessGroup.orderCost && showCost"></td>
+                                <td style="border: none"></td>
+                                <td align="right"><b>Amount Paid:</b></td>
+                                <td colspan="2" style="color: green"><b>{{saleOrder.amountPaid|currency}}</b></td>
+                            </tr>
+                            <tr>
+                                <td style="border: none"></td>
+                                <td style="border: none" *ngIf="accessGroup.costPrice"></td>
+                                <td style="border: none"></td>
+                                <td style="border: none"></td>
+                                <td style="border: none"></td>
+                                <td style="border: none" *ngIf="accessGroup.orderCost && showCost"></td>
+                                <td style="border: none"></td>
+                                <td style="border: none" align="right"><b>Amount Due:</b></td>
+                                <td colspan="2" [ngStyle]="{'border-top':'solid','border-bottom':'solid','color':saleOrder.grossTotal<0?'red':'blue','border-color':'black'}">
+                                    <b>{{saleOrder.amountDue|currency}}</b>
+                                </td>
+                            </tr>
+                        </tfoot>
+
+                    </table> 
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- PICKUP HISTORY -->
+    <div class="tab-pane" id="nav-pickup" role="tabpanel" aria-labelledby="pickup-tab">
+        <div class="col-md-12" [ngClass]="{'disableDiv': orderReadOnly}">
+            <p class="title-middle-lg-1">Not Completed</p>
+        </div>
+    </div>
+
+</div>
+
+<!-- SHOW CREATED & UPDATED BY MODAL -->
+<div class="modal fade" id="infoModal" tabindex="-1" role="dialog" aria-labelledby="infoModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+
+            <div class="modal-header"  style="background-color: royalblue; color: white">
+                <h5 class="modal-title" id="infoModalLabel">Sale Order Information: {{saleOrder.orderId}}</h5>
+                <button type="button" class="close" style="color: white" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            
+            <div class="modal-body">            
+                <div class="form-group col-md-12">
+                <label style="color: blue">Created by:</label>
+                <label>{{saleOrder.createdBy}}</label> <br><br>
+                <label style="color: orange">Last Updated by:</label>
+                <label>{{saleOrder.updatedBy}}</label>
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary rounded-text" data-dismiss="modal">Close</button>
+            </div>
+        
+        </div>
+    </div>
+</div>
+
+<!-- CREATE/CANCEL INVOICE MODAL -->
+<div class="modal fade" id="invoiceModal" tabindex="-1" role="dialog" aria-labelledby="invoiceModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+
+            <div class="modal-header"  style="background-color: royalblue; color: white">
+                <h5 class="modal-title" id="invoiceModalLabel">{{saleOrder.billingStatus?'Cancel':'Create'}} Invoice for Sale Order: {{saleOrder.orderId}}</h5>
+                <button type="button" class="close" style="color: white" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            
+            <div class="modal-body">            
+                <div class="form-group col-md-12">
+                    <label *ngIf="!saleOrder.billingStatus">Invoice Date:</label> <span style="color:red" *ngIf="!saleOrder.billingStatus"> *</span>
+                    <input type="date" class="form-control" *ngIf="!saleOrder.billingStatus" [(ngModel)]="saleOrder.billingDate" required>
+                    <p></p>
+                    <label>Invoice Comments:</label>
+                    <textarea type="text" class="form-control" style="resize: none" [(ngModel)]="saleOrder.invoiceComment" rows="3" maxlength="250"> </textarea>Max: 250 characters
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary rounded-text" data-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary rounded-text" data-dismiss="modal" (click)="changeBillingStatus()">{{saleOrder.billingStatus?'Cancel Invoice':'Create Invoice'}}</button>
+            </div>
+        
+        </div>
+    </div>
+</div>
+
+<!-- ADD PAYMENT MODAL -->
+<div class="modal fade" id="paymentModal" tabindex="-1" role="dialog" aria-labelledby="paymentModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+
+            <div class="modal-header"  style="background-color: royalblue; color: white">
+                <h5 class="modal-title" id="paymentModalLabel">Add Payment</h5>
+                <button type="button" class="close" style="color: white" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            
+            <div class="modal-body">            
+                <div class="form-group col-md-12">
+                    <p class="title-middle-lg-1">Not Completed</p>
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary rounded-text" data-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary rounded-text">Add Payment</button>
+            </div>
+        
+        </div>
+    </div>
+</div>
+
+<!-- CREDIT MEMO MODAL -->
+<div class="modal fade" id="creditModal" tabindex="-1" role="dialog" aria-labelledby="creditModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+
+            <div class="modal-header"  style="background-color: royalblue; color: white">
+                <h5 class="modal-title" id="creditModalLabel">Create Credit Memo</h5>
+                <button type="button" class="close" style="color: white" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            
+            <div class="modal-body">            
+                <div class="form-group col-md-12">
+                    <p class="title-middle-lg-1">Not Completed</p>
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary rounded-text" data-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary rounded-text">Create Credit Memo</button>
+            </div>
+        
+        </div>
+    </div>
+</div>
+
+<!-- PICKUP TICKET MODAL -->
+<div class="modal fade" id="pickupModal" tabindex="-1" role="dialog" aria-labelledby="pickupModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl" role="document">
+        <div class="modal-content">
+
+            <div class="modal-header"  style="background-color: royalblue; color: white">
+                <h5 class="modal-title" id="pickupModalLabel">Create Pickup Ticket</h5>
+                <button type="button" class="close" style="color: white" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            
+            <div class="modal-body">            
+                <div class="form-group col-md-12">
+                    <p class="title-middle-lg-1">Not Completed</p>
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary rounded-text" data-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary rounded-text">Create Pickup Ticket</button>
+            </div>
+        
+        </div>
+    </div>
+</div>
+
