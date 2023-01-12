@@ -1,0 +1,119 @@
+/* You can add global styles to this file, and also import other style files */
+
+.msg-success {
+    border: 2px solid limegreen;
+    border-radius: 50px;
+    box-shadow: 8px 8px 5px lightgrey;
+    padding: 15px 12px;
+    text-align: center;
+    height: 60px;
+    color: limegreen;
+    font-size: larger;
+}
+
+.msg-fail {
+    border: 2px solid red;
+    border-radius: 50px;
+    box-shadow: 8px 8px 5px lightgrey;
+    padding: 15px 12px;
+    text-align: center;
+    height: 60px;
+    color: red;
+    font-size: larger;
+}
+
+.disableDiv {
+    pointer-events: none;
+}
+
+.rounded-text {
+    border-radius: 20px; 
+}
+
+.rounded-text-shade {
+    border-radius: 20px; 
+    box-shadow: 8px 8px 5px grey
+}
+
+.rounded-div {
+    border: thin solid lightgrey;
+    border-radius: 20px; 
+}
+
+.rounded-div-shade {
+    border: thin solid lightgrey;
+    border-radius: 20px; 
+    box-shadow: 8px 8px 5px lightgrey;
+}
+
+.div-title {
+    border: thin solid lightgrey;
+    border-radius: 20px 20px 0px 0px; 
+}
+
+.div-body {
+    border: thin solid lightgrey;
+    border-radius: 0px 0px 20px 20px; 
+}
+
+.div-body-shade {
+    border: thin solid lightgrey;
+    border-radius: 0px 0px 20px 20px; 
+    box-shadow: 8px 8px 5px lightgrey;
+}
+
+.title-middle-lg-1 {
+    display: block;
+    margin: 15% auto 10% auto;
+    font-size: 2.2rem;
+    text-align: center;
+    font-weight: 700;
+    color: darkblue;
+    text-shadow: 0px 10px 10px lightskyblue;
+}
+  
+.title-middle-lg-2 {
+    display: block;
+    margin: 15% auto 10% auto;
+    font-size: 2.2rem;
+    text-align: center;
+    font-weight: 700;
+    color: darkgreen;
+    text-shadow: 4px 2px 6px lightgreen;
+}
+
+.title-top-md-1 {
+    display: block;
+    margin: 0% auto 2% auto;
+    font-size: 2.2rem;
+    text-align: center;
+    font-weight: 600;
+    color: darkblue;
+    text-shadow: 0px 10px 10px lightskyblue;
+}
+  
+.title-top-md-2 {
+    display: block;
+    margin: 0% auto 2% auto;
+    font-size: 2.2rem;
+    text-align: center;
+    font-weight: 600;
+    color: darkgreen;
+    text-shadow: 4px 2px 6px lightgreen;
+}
+
+.input-text {
+    border: thin solid lightgrey;
+    border-radius: 10px;
+    color: orange;
+    font-weight: bold; 
+    padding-left: 10px;
+}
+
+.label-text {
+    color: orange;
+    font-weight: bold; 
+    padding-right: 6px;
+}
+
+  

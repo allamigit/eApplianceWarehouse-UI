@@ -1,0 +1,155 @@
+<div>
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <a class="navbar-brand" routerLink="/welcome">
+            <!--<img src="src/app/EW.jpg" width="30" height="30" loading="lazy">-->
+            📺 iWarehouse
+        </a>
+
+        <div class="collapse navbar-collapse">
+            
+            <ul class="navbar-nav mr-auto mt-2 mt-lg-0">
+                <li class="nav-item">
+                    <a class="nav-link" routerLink="/stock" *ngIf="loggedIn && accessGroup.stock">📋 Stock</a>
+                </li>
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" *ngIf="loggedIn && accessGroup.saleOrder">
+                        📦 Sale Order
+                    </a>
+                    <div class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
+                      <a class="dropdown-item" routerLink="/sale-order" *ngIf="accessGroup.allOrders">📓 All Sale Orders</a>
+                      <a class="dropdown-item" routerLink="/sale-order-items" *ngIf="accessGroup.newOrder">📑 New Sale Order</a>
+                    </div>
+                </li>
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" *ngIf="loggedIn && accessGroup.settings">
+                        ⚙️ Settings
+                    </a>
+                    <div class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
+                        <a class="dropdown-item" style="cursor: pointer" data-toggle="modal" data-target="#generalModal" *ngIf="accessGroup.general">🛠️ General</a>
+                        <a class="dropdown-item" routerLink="/user" *ngIf="accessGroup.users">🧑 Users</a>
+                        <a class="dropdown-item" routerLink="/access-group" *ngIf="accessGroup.groups">🔐 Permission Groups</a>
+                    </div>
+                </li>
+            </ul>
+
+            <div class="form-inline my-2 my-lg-0" *ngIf="!loggedIn">
+                <div class="input-group-prepend">
+                    <span class="input-group-text">🧑</span>
+                </div>
+                <input class="form-control" type="text" [(ngModel)]="username" placeholder="Username" required>
+                <span style="color: white">--</span>
+                <div class="input-group-prepend">
+                    <span class="input-group-text">🔑</span>
+                </div>
+                <input class="form-control" type="password" [(ngModel)]="password" placeholder="Password" required>
+                <span style="color: white">--</span>
+                <button class="btn btn-outline-success my-2 my-sm-0" (click)="logIN()">Login</button>
+                <span style="color: white">--</span>
+                <button class="btn btn-danger rounded-text" *ngIf="invalidCredentials">{{invalidMessage}}</button>
+            </div>
+
+            <div class="form-inline my-2 my-lg-0" *ngIf="loggedIn">
+                <div class="btn-group dropleft">
+                    <a class="btn btn-outline-primary dropdown-toggle" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        🧑 {{fullName}}
+                    </a>
+                    <div class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
+                        <a class="dropdown-item" style="background-color: royalblue; color: white">{{userTitle}}</a>
+                        <div class="dropdown-divider"></div>
+                        <a class="dropdown-item" style="cursor: pointer" data-toggle="modal" data-target="#changePasswordModal">🔑 Change Password</a>
+                        <div class="dropdown-divider"></div>
+                        <a class="dropdown-item" style="cursor: pointer" (click)="logOUT()">🛑 Logout</a>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </nav>
+</div>
+
+<!-- GENERAL SETTINGS MODAL -->
+<div class="modal fade" id="generalModal" tabindex="-1" role="dialog" aria-labelledby="generalModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+
+            <div class="modal-header"  style="background-color: royalblue; color: white">
+                <h5 class="modal-title" id="generalModalLabel">🛠️ General Settings</h5>
+                <button type="button" class="close" style="color: white" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            
+            <div class="modal-body">            
+                <div class="form-group col-md-12">
+                    <p class="title-middle-lg-1">Not Completed</p>
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary rounded-text" data-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary rounded-text">Save Changes</button>
+            </div>
+        
+        </div>
+    </div>
+</div>
+
+<!-- CHANGE PASSWORD MODAL -->
+<div class="modal fade" id="changePasswordModal" tabindex="-1" role="dialog" aria-labelledby="changePasswordModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+
+        <div class="modal-header"  style="background-color: royalblue; color: white">
+            <h5 class="modal-title" id="changePasswordModalLabel">🔑 Change Password</h5>
+            <button type="button" class="close" style="color: white" data-dismiss="modal" aria-label="Close" (click)="resetForm()">
+            <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+        
+        <div class="modal-body" [ngClass]="{'disableDiv': passwordChanged}">
+
+            <div class="form-group col-md-12" style="background-color: green; color: white; text-align: center" *ngIf="passwordChanged">Password Changed Successfully</div>
+
+            <div class="form-group col-md-8">
+                <label>Old Password</label> <span style="color:red"> *</span>
+                <input type="password" class="form-control" [(ngModel)]="oldPassword" (change)="getOldPassword()" maxlength=20 required>
+                <span style="color:red" *ngIf="!validPassword">❌ Invalid Password</span>
+                <span style="color:green" *ngIf="!enPassword">✔️ Valid Password</span>
+            </div>
+
+            <div class="form-group col-md-8" [ngClass]="{'disableDiv': rePassword}">
+                <label>New Password</label> <span style="color:red"> *</span>
+                <input type="password" class="form-control" [(ngModel)]="newPassword" [disabled]="enPassword" 
+                    (input)="verifyNewPassword()" (change)="enableConfirmNewPassword()" maxlength=20 required>
+
+                <div class="form-group col-md-12" *ngIf="!enPassword">
+                    <span>{{check1?'✔️ ':'❌ '}}</span> <label [ngStyle]="{'color':check1?'green':'red'}">At least one capital letter A-Z</label> <br>
+                    <span>{{check2?'✔️ ':'❌ '}}</span> <label [ngStyle]="{'color':check2?'green':'red'}">At least one small letter a-z</label> <br>
+                    <span>{{check3?'✔️ ':'❌ '}}</span> <label [ngStyle]="{'color':check3?'green':'red'}">Numbers 0-9</label> <br>
+                    <span>{{check4?'✔️ ':'❌ '}}</span> <label [ngStyle]="{'color':check4?'green':'red'}">At least one of: !@#$%^&</label> <br>
+                    <span>{{check5?'✔️ ':'❌ '}}</span> <label [ngStyle]="{'color':check5?'green':'red'}">At least 8 characters length</label>
+                </div>
+            </div>
+
+            <div class="form-group col-md-8">
+                <label>Confirm New Password</label> <span style="color:red"> *</span>
+                <input type="password" class="form-control" [(ngModel)]="confirmPassword" [disabled]="!rePassword" (input)="confirmNewPassword()" maxlength=20 required>
+                <span style="color:red" *ngIf="!matchPassword">❌ Password Mismatched</span>
+                <span style="color:green" *ngIf="confirmPassword != null && matchPassword">✔️ Password Matched</span>
+            </div>
+
+            <span style="color:red">* </span> <span>Required fields</span>
+
+        </div>
+
+        <div class="modal-footer">
+            <button type="button" class="btn btn-secondary rounded-text" (click)="resetForm()">Reset</button>
+            <button id="add" type="button" class="btn btn-primary rounded-text" [disabled]="!changeButton" (click)="changePassword()">Change Password</button>
+        </div>
+        
+        </div>
+    </div>
+</div>
+
+<router-outlet></router-outlet>
+
