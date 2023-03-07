@@ -168,7 +168,7 @@
                 <span style="color: white" *ngIf="accessGroup.orderPayment && !showCreateOrder && saleOrder.amountDue<0">--</span>
                 <button class="btn btn-secondary rounded-text" data-toggle="modal" data-target="#creditModal" *ngIf="accessGroup.orderPayment && !showCreateOrder && saleOrder.amountDue<0">Create Credit Memo</button>
                 <span style="color: white" *ngIf="accessGroup.orderPickup">--</span>
-                <button class="btn btn-secondary rounded-text" data-toggle="modal" data-target="#pickupModal" *ngIf="accessGroup.orderPickup" [disabled]="saleOrder.itemsCount-saleOrder.pickupCount==0">Create Pickup Ticket</button>
+                <button class="btn btn-secondary rounded-text" data-toggle="modal" data-target="#pickupModal" *ngIf="accessGroup.orderPickup" [disabled]="saleOrder.itemsCount-saleOrder.pickupCount==0">Create Pickup List</button>
             </div>
         </div>    
     </div>
@@ -362,7 +362,7 @@
                                 <td style="border: none"></td>
                                 <td style="border: none" *ngIf="accessGroup.orderCost && showCost"></td>
                                 <td style="border: none"></td>
-                                <td align="right"><b>Sale Tax:</b></td>
+                                <td align="right"><b>Sales Tax:</b></td>
                                 <td colspan="2">{{saleOrder.saleTax|currency}}</td>
                             </tr>
                             <tr *ngIf="saleOrder.stateTax>0">
@@ -542,13 +542,13 @@
     </div>
 </div>
 
-<!-- PICKUP TICKET MODAL -->
+<!-- PICKUP LIST MODAL -->
 <div class="modal fade" id="pickupModal" tabindex="-1" role="dialog" aria-labelledby="pickupModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-xl" role="document">
         <div class="modal-content">
 
             <div class="modal-header"  style="background-color: royalblue; color: white">
-                <h5 class="modal-title" id="pickupModalLabel">Create Pickup Ticket</h5>
+                <h5 class="modal-title" id="pickupModalLabel">Create Pickup List</h5>
                 <button type="button" class="close" style="color: white" data-dismiss="modal" aria-label="Close">
                 <span aria-hidden="true">&times;</span>
                 </button>
@@ -562,7 +562,7 @@
 
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary rounded-text" data-dismiss="modal">Close</button>
-                <button type="button" class="btn btn-primary rounded-text">Create Pickup Ticket</button>
+                <button type="button" class="btn btn-primary rounded-text">Create Pickup List</button>
             </div>
         
         </div>
