@@ -214,7 +214,7 @@ export class SaleOrderComponent implements OnInit {
   public filterOrdersBySelectedDate(oDate: string) {
     this.display = 6;
 
-    this.reportHead = 'List of Sale Orders for Date - ' + oDate;
+    this.reportHead = 'List of Sales Orders for Date - ' + oDate;
     this.dateFrom = oDate;
     this.dateTo = oDate;
     
@@ -234,7 +234,7 @@ export class SaleOrderComponent implements OnInit {
   public filterOrdersBySelectedCustomer(customer: string) {
     this.display = 7;
 
-    this.reportHead = 'List of All Sale Orders for Customer - ' + customer;
+    this.reportHead = 'List of All Sales Orders for Customer - ' + customer;
     
     this.ordersFilter = this.allSaleOrders;
     this.filterResult = this.ordersFilter.filter((o: SaleOrder) => o.customerName.toLowerCase() == customer.toLowerCase());
@@ -252,7 +252,7 @@ export class SaleOrderComponent implements OnInit {
   public filterOrdersBySelectedUser(user: string) {
     this.display = 8;
 
-    this.reportHead = 'List of All Sale Orders for User - ' + user;
+    this.reportHead = 'List of All Sales Orders for User - ' + user;
 
     this.ordersFilter = this.allSaleOrders;
     this.filterResult = this.ordersFilter.filter((o: SaleOrder) => o.createdUser == user);
@@ -271,7 +271,7 @@ export class SaleOrderComponent implements OnInit {
     this.display = 1;
     this.blankRow = false;
 
-    if(this.accessGroup.orderCurrentUser) this.reportHead = 'List of All Sale Orders - ' + this.currentUser; else this.reportHead = 'List of All Sale Orders';
+    if(this.accessGroup.orderCurrentUser) this.reportHead = 'List of All Sales Orders - ' + this.currentUser; else this.reportHead = 'List of All Sale Orders';
 
     if(this.accessGroup.orderCurrentUser) this.filterOrdersBySelectedUser(this.currentUser); else this.saleOrder = this.allSaleOrders;
     this.calcTableTotals();
@@ -289,7 +289,7 @@ export class SaleOrderComponent implements OnInit {
     this.blankRow = false;
 
     this.currentDate = new Date();
-    if(this.accessGroup.orderCurrentUser) this.reportHead = 'List of Today Sale Orders - ' + this.currentUser; else this.reportHead = 'List of Today Sale Orders';
+    if(this.accessGroup.orderCurrentUser) this.reportHead = 'List of Today Sales Orders - ' + this.currentUser; else this.reportHead = 'List of Today Sale Orders';
 
     this.ordersFilter = this.allSaleOrders;
     this.filterResult = this.ordersFilter.filter((o: SaleOrder) => o.orderDate.toString() == this.currentDate.toJSON().substr(0,10));
@@ -314,9 +314,9 @@ export class SaleOrderComponent implements OnInit {
     } else this.blankRow = false;
 
     if(this.accessGroup.orderCurrentUser && !this.blankRow) {
-      this.reportHead = 'List of Sale Orders (' + dateFrom + ' to ' + dateTo + ') - ' + this.currentUser;
+      this.reportHead = 'List of Sales Orders (' + dateFrom + ' to ' + dateTo + ') - ' + this.currentUser;
     } else if(!this.blankRow) {
-      this.reportHead = 'List of Sale Orders (' + dateFrom + ' to ' + dateTo + ')';
+      this.reportHead = 'List of Sales Orders (' + dateFrom + ' to ' + dateTo + ')';
     }
 
     this.ordersFilter = this.allSaleOrders;
@@ -353,7 +353,7 @@ export class SaleOrderComponent implements OnInit {
     this.display = 11;
     this.blankRow = false;
 
-    if(this.accessGroup.orderCurrentUser) this.reportHead = 'List of Sale Orders for Item (' + this.itemName + ') - ' + this.currentUser; else this.reportHead = 'List of Sale Orders for Item (' + this.itemName + ')';
+    if(this.accessGroup.orderCurrentUser) this.reportHead = 'List of Sales Orders for Item (' + this.itemName + ') - ' + this.currentUser; else this.reportHead = 'List of Sale Orders for Item (' + this.itemName + ')';
     this.orders.getOrdersForStockItem(this.itemId).subscribe(
       data => {
         this.saleOrder = data;
@@ -366,7 +366,7 @@ export class SaleOrderComponent implements OnInit {
     this.blankRow = false;
 
     if(this.searchId > 0) {
-      this.reportHead = 'Sale Order ID (' + this.searchId + ')';
+      this.reportHead = 'Sales Order ID (' + this.searchId + ')';
       
       this.ordersFilter = this.allSaleOrders;
       this.filterResult = this.ordersFilter.filter((o: SaleOrder) => o.orderId == this.searchId);
@@ -389,7 +389,7 @@ export class SaleOrderComponent implements OnInit {
     this.blankRow = false;
 
     if(this.searchName != '') {
-      this.reportHead = 'List of Sale Orders for Customer Name or Contains (' + this.searchName + ')';
+      this.reportHead = 'List of Sales Orders for Customer Name or Contains (' + this.searchName + ')';
 
       this.ordersFilter = this.allSaleOrders;
       this.filterResult = this.ordersFilter.filter((o: SaleOrder) => o.customerName.toLowerCase().indexOf(this.searchName.toLowerCase()) != -1);
